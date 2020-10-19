@@ -20,7 +20,7 @@ With the abundance in the number of phones listed on online marketplaces, it ove
 4) Store the data into a database.
 5) Preprocess the data.
 6) Perform exploratory data analysis.
-7) Deploymen
+7) Deployment
 
 ## Technologies
 
