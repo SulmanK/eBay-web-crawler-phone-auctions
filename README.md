@@ -23,7 +23,11 @@ With the abundance in the number of phones listed on online marketplaces, it ove
 7) Deployment
 
 ## Technologies
-
+* **Docker**
+* **Python**
+* **Apache Airflow**
+* **PostgreSQL**
+* **Heroku**
 
 ## Pertinent Deliverables
 * [Dashboard](https://ebay-scraping-popular-phones.herokuapp.com/)
