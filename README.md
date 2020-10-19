@@ -34,3 +34,5 @@ With the abundance in the number of phones listed on online marketplaces, it ove
 
 ## Demo
 ![Demo1](http://g.recordit.co/z0I3QYsOhr.gif)
+![Demo2](http://g.recordit.co/zzjJXYbv0n.gif)
+
