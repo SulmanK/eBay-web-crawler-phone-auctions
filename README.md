@@ -31,3 +31,6 @@ With the abundance in the number of phones listed on online marketplaces, it ove
 
 ## Pertinent Deliverables
 * [Dashboard](https://ebay-scraping-popular-phones.herokuapp.com/)
+
+## Demo
+![Demo2](http://g.recordit.co/T5UyBbE9zO.gif)
