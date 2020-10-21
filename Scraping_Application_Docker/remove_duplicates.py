@@ -21,12 +21,12 @@ def eBayscrapper_remove_duplicates(phone_model):
     # Delete columns with null price, timestamp, user, and id values
     cursor.execute('DELETE FROM ' + str(s) +
                    ' WHERE price IS NULL OR user IS NULL or id IS NULL OR timestamp IS NULL;')
-
-    # Delete duplicate values
-    cursor.execute('DELETE FROM ' + str(s) +
-                   ' WHERE id IN (SELECT id FROM(SELECT  id, ROW_NUMBER() OVER(PARTITION BY id ORDER BY id) AS row_num FROM ' + str(s) + ') t WHERE t.row_num > 1);')
+    
     conn.commit()
-
+    # Delete duplicate values
+    cursor.execute('DELETE FROM ' + str(s) + ' x USING ' + str(s) +  ' y WHERE x.index > y.index AND x.id = y.id;')
+    conn.commit()
+    conn.close()
     return 'The table has been cleared for duplicate and null values.'
 
 
