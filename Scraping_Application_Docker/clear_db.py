@@ -36,7 +36,10 @@ def eBayscrapper_clear_tables(phone_model_1, phone_model_2, phone_model_3, phone
     # Drop tables if number of row exceeds 10000
     cursor.execute('DO $do$ BEGIN IF (with cterc as (SELECT COUNT(*) as rn FROM ' + str(s_1) + ' UNION ALL SELECT COUNT(*) FROM ' + str(s_2) + ' UNION ALL SELECT COUNT(*) FROM ' + str(s_3) +
                    ' UNION ALL SELECT COUNT(*) FROM ' + str(s_4) + ') SELECT SUM(rn) as totalrowNo from cterc' + ') > 10000 THEN DROP TABLE ' + str(s_1) + ',' + str(s_2) + ',' + str(s_3) + ',' + str(s_4) + '; END IF; END $do$')
-
+    
+    conn.commit()
+    conn.close()
+    
     return "The tables have been cleared."
 
 
