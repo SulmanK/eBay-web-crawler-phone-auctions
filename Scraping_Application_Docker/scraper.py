@@ -89,10 +89,15 @@ def eBayscrapper_daily(phone_model):
                 tmp_timestamp = listing.find(
                     'span',
                     attrs={'class': 's-item__dynamic s-item__listingDate'})
-                timestamp = tmp_timestamp.find('span', attrs={'class': "BOLD"})
-                prod_timestamp = str(timestamp.find(
-                    text=True, recursive=False))
-                item_timestamps.append(prod_timestamp)
+                
+                if tmp_timestamp == None:
+                    prod_timestamp = None
+                    item_timestamps.append(prod_timestamp)
+                else:
+                    timestamp = tmp_timestamp.find('span', attrs={'class': "BOLD"})
+                    prod_timestamp = str(timestamp.find(
+                        text=True, recursive=False))
+                    item_timestamps.append(prod_timestamp)
 
                 # Check if product price is unknown or known
                 if prod_price == 'None':
@@ -233,7 +238,7 @@ def eBayscrapper_daily(phone_model):
 
     # Add active auctions column
     df['active_auction'] = 'YES'
-
+    
     # PostgreSQL
     # Connect to our database
 
@@ -246,12 +251,25 @@ def eBayscrapper_daily(phone_model):
     s = phone_model
     s = s.lower()
     s = s.replace(' ', '_')
-
+    
+    # Write dataframe to SQL database
     df.to_sql(str(s), con=engine, if_exists='append')
     conn.commit()
+    
+    # Read in dataframe from SQL
+    tmp_df = pd.read_sql('select * from ' + str(s), con=conn, index_col = 'index')
+    tmp_df.index = [x for x in range (0, len(tmp_df))]
+    
+    # Drop original table from database
+    cursor.execute('DROP TABLE IF EXISTS' + ' ' + str(s))
+    conn.commit()
+    
+    # Write dataframe to SQL database
+    tmp_df.to_sql(str(s), con=engine, if_exists='append')
+    conn.commit()
     conn.close()
+    
     return print("The data entries have been added for " + str(s))
-
 
 
 # ---------------------- Instantiate Function
