@@ -23,7 +23,7 @@ def active_auctions_ids(phone_model):
 
     # Pull the data from the database
     # Set up the connection
-    DATABASE_URL = "enter"
+    DATABASE_URL = "postgres://isczffxjpjzpxr:41e6aaa55dd93e8ae680b5d6ab8eef4febc02f2a94b7c266dffce8ccea74c286@ec2-50-19-26-235.compute-1.amazonaws.com:5432/d64tko6dss9lgk"
     engine = create_engine(DATABASE_URL)
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     cursor = conn.cursor()
@@ -39,6 +39,7 @@ def active_auctions_ids(phone_model):
     
     # Iterate through all the urls in the dataframe
     for x in df[df['active_auction'] == 'YES']['url']:
+        # First case: Check if listing has ended using the top panel
         try:
             # Initiate requests
             r = requests.get(x)
@@ -55,6 +56,25 @@ def active_auctions_ids(phone_model):
 
             # If this string is present, append the url to the list.
             if tmp_active_auction == "The listing you're looking for has ended.":
+                inactive_url.append(x)
+            
+        except:
+            None
+            
+        # Check if listing has ended using the yellow text
+        try:
+            # Initiate requests
+            r = requests.get(x)
+
+            # Get text data
+            text_data = r.text
+            soup = bs4.BeautifulSoup(text_data, "html.parser")
+            
+            # Other cases
+            tmp = soup.find(
+                'span', attrs={'class': 'msgTextAlign'})
+            
+            if tmp.find(text = True) != None:
                 inactive_url.append(x)
         except:
             None
