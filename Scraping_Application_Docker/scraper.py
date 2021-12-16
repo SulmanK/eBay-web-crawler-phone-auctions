@@ -9,6 +9,8 @@ import re
 import requests
 import time
 # --------------------- Function
+
+
 def eBayscrapper_daily(phone_model):
     """Function to scrape the phone prices off eBay"""
     # Create item and price list
@@ -56,7 +58,6 @@ def eBayscrapper_daily(phone_model):
 
     # Create a loop to iterate through each auction listing.
     for listing in listings:
-      #  print(listing)
         prod_name = " "
         prod_price = " "
         prod_url = " "
@@ -89,12 +90,13 @@ def eBayscrapper_daily(phone_model):
                 tmp_timestamp = listing.find(
                     'span',
                     attrs={'class': 's-item__dynamic s-item__listingDate'})
-                
+
                 if tmp_timestamp == None:
                     prod_timestamp = None
                     item_timestamps.append(prod_timestamp)
                 else:
-                    timestamp = tmp_timestamp.find('span', attrs={'class': "BOLD"})
+                    timestamp = tmp_timestamp.find(
+                        'span', attrs={'class': "BOLD"})
                     prod_timestamp = str(timestamp.find(
                         text=True, recursive=False))
                     item_timestamps.append(prod_timestamp)
@@ -141,7 +143,8 @@ def eBayscrapper_daily(phone_model):
             item_ids.append(prod_ids)
 
         # Extract user names
-        user = soup.find('span', attrs={'class': 'mbg-nw'})
+        user = soup.find(
+            'span', attrs={'class': 'ux-textspans--PSEUDOLINK ux-textspans--BOLD'})
 
         if user == None:
 
@@ -150,42 +153,63 @@ def eBayscrapper_daily(phone_model):
             user_name.append(prod_user)
 
         else:
-            prod_user = str(user.find(text=True, recursive=False))
+            prod_user = user.get_text()
 
             user_name.append(prod_user)
 
         # Extract feedback score
-        feedback = soup.find('span', attrs={'class': 'mbg-l'})
+        feedback = soup.find(
+            'div', attrs={'class': 'ux-seller-section__item--seller'})
 
-        if feedback == None:
+        # Try and Except block (we use this because we are indexing on the tags, if there isnt an index that means its a null)
+        try:
 
+            feedback = feedback.find_all(
+                'span', attrs={'class': 'ux-textspans--PSEUDOLINK'})[1]
+
+            if feedback == None:
+
+                prod_feedback = None
+
+                user_feedback.append(prod_feedback)
+
+            else:
+                prod_feedback = feedback.get_text()
+
+                user_feedback.append(prod_feedback)
+        except:
             prod_feedback = None
 
             user_feedback.append(prod_feedback)
 
-        else:
-            prod_feedback = str(feedback.find(
-                'a').find(text=True, recursive=False))
-
-            user_feedback.append(prod_feedback)
-
         # Extract positive feedback %
-        pos_feedback = soup.find('div', attrs={'id': 'si-fb'})
+        # Examine div tag
 
-        if pos_feedback == None:
+        # Try and Except block (we use this because we are indexing on the tags, if there isnt an index that means its a null)
+        try:
+            pos_feedback = soup.find_all(
+                'div', attrs={'class': 'ux-seller-section__item'})[1]
 
+            # Examine span tag
+            pos_feedback = pos_feedback.find('span')
+
+            if pos_feedback == None:
+
+                prod_pos = None
+
+                user_pos.append(prod_pos)
+            else:
+                prod_pos = pos_feedback.get_text()
+
+                prod_pos = re.findall("\d+", prod_pos)[0]
+
+                user_pos.append(prod_pos)
+        except:
             prod_pos = None
-
-            user_pos.append(prod_pos)
-        else:
-            prod_pos = str(pos_feedback.find(text=True, recursive=False))
-
-            prod_pos = re.match("(.*?)%", prod_pos).group()
 
             user_pos.append(prod_pos)
 
     # Dataframe
-
     df = pd.DataFrame(data={'product_name': item_name,
                             'url': item_urls,
                             'id': item_ids,
@@ -238,37 +262,61 @@ def eBayscrapper_daily(phone_model):
 
     # Add active auctions column
     df['active_auction'] = 'YES'
-    
-    # PostgreSQL
-    # Connect to our database
 
-    DATABASE_URL = "enter"
-    engine = create_engine(DATABASE_URL)
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    cursor = conn.cursor()
+    # Drop entries with null user, user_feedback, user_feedback_pos, and price
+    df = df.drop(
+        df.loc[
+            (df['user'] == None) | (df['user_feedback'] == None) | (
+                df['user_feedback_positive'] == None) | (df['price'] == None)
+        ].index).reset_index(drop=True)
+    try:
+        # PostgreSQL
+        # Connect to our database
+        DATABASE_URL = "postgres://isczffxjpjzpxr:41e6aaa55dd93e8ae680b5d6ab8eef4febc02f2a94b7c266dffce8ccea74c286@ec2-50-19-26-235.compute-1.amazonaws.com:5432/d64tko6dss9lgk"
+        engine = create_engine(DATABASE_URL)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cursor = conn.cursor()
 
-    # Perform string manipulations to phone model name
-    s = phone_model
-    s = s.lower()
-    s = s.replace(' ', '_')
-    
-    # Write dataframe to SQL database
-    df.to_sql(str(s), con=engine, if_exists='append')
-    conn.commit()
-    
-    # Read in dataframe from SQL
-    tmp_df = pd.read_sql('select * from ' + str(s), con=conn, index_col = 'index')
-    tmp_df.index = [x for x in range (0, len(tmp_df))]
-    
-    # Drop original table from database
-    cursor.execute('DROP TABLE IF EXISTS' + ' ' + str(s))
-    conn.commit()
-    
-    # Write dataframe to SQL database
-    tmp_df.to_sql(str(s), con=engine, if_exists='append')
-    conn.commit()
-    conn.close()
-    
+        # Perform string manipulations to phone model name
+        s = phone_model
+        s = s.lower()
+        s = s.replace(' ', '_')
+
+        # Write dataframe to SQL database
+        try:
+            df.to_sql(str(s), con=engine, if_exists='append')
+            conn.commit()
+
+        except:
+            print('error')
+
+        # Read in dataframe from SQL
+        tmp_df = pd.read_sql('select * from ' + str(s),
+                             con=conn, index_col='index')
+        tmp_df.index = [x for x in range(0, len(tmp_df))]
+
+        # Drop original table from database
+        cursor.execute('DROP TABLE IF EXISTS' + ' ' + str(s))
+
+        # Commit changes
+        conn.commit()
+
+        # Write dataframe to SQL database
+        tmp_df.to_sql(str(s), con=engine, if_exists='fail')
+
+        # Commit changes
+        conn.commit()
+
+        # Close cursor and connections
+        cursor.close()
+        conn.close()
+
+    except:
+        # Close cursor and connections
+        cursor.close()
+        conn.close()
+        print('Error in previous query.')
+
     return print("The data entries have been added for " + str(s))
 
 
