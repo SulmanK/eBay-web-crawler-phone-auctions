@@ -30,7 +30,7 @@ With the abundance in the number of phones listed on online marketplaces, it ove
 * **AWS**
 
 ## Pertinent Deliverables
-* [Dashboard](http://ebay-phone-aide-app.us-east-1.elasticbeanstalk.com/)
+* [Dashboard](http://phone-auction-aide-3-env.eba-pt2ur9kp.us-east-1.elasticbeanstalk.com/)
 
 ## Demo
 ![Demo2](Animation.gif)
