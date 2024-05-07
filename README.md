@@ -33,5 +33,5 @@ With the abundance in the number of phones listed on online marketplaces, it ove
 * [Dashboard](http://ebay-phone-aide-app.us-east-1.elasticbeanstalk.com/)
 
 ## Demo
-![Demo2](http://g.recordit.co/4rAExRnGRF.gif)
+![Demo2](Animation.gif)
 
