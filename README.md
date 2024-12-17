@@ -28,7 +28,6 @@ eBay-web-crawler-phone-auctions/
 │   ├── remove_duplicates.py                # Removes all duplicate item ids from the SQL database
 │   ├── requirements.txt                    # Python dependencies for the scraper
 |   └── scraper.py                          # Main web scraping script
-│   
 ├── Animation.gif                           # GIF demonstrating the application's functionality
 ├── LICENSE                                 # Licensing information for the repository
 └── README.md                               # Overview of the repository
